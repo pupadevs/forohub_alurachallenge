@@ -28,7 +28,7 @@ public class User {
     @OneToMany(mappedBy = "user",cascade = CascadeType.ALL)
     private List<Topic> topics= new ArrayList<>();;
 
-    public User(UUID id, String name, String email, String password) {
+    public User( String name, String email, String password) {
         this.id = UUID.randomUUID();
         this.name = name;
         this.email = email;

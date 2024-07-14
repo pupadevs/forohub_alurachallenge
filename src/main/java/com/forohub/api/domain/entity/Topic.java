@@ -3,6 +3,7 @@ package com.forohub.api.domain.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ import java.util.UUID;
 @Table(name = "topics")
 @NoArgsConstructor
 @Getter
+@Setter
 public class Topic {
     @Id
     @GeneratedValue(generator = "UUID")
@@ -35,6 +37,11 @@ public class Topic {
     @JoinColumn(name = "course_id" ,nullable = true)
     private Course course;
 
+    public Topic(String title, String message){
+        this.id = UUID.randomUUID();
+        this.title = title;
+        this.message = message;
+    }
     @PrePersist
     protected void onCreate() {
 
