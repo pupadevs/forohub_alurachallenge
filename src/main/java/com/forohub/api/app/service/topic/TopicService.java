@@ -1,5 +1,6 @@
-package com.forohub.api.app.service;
+package com.forohub.api.app.service.topic;
 
+import com.forohub.api.app.service.ResourceNotFoundException;
 import com.forohub.api.domain.dto.ResponseDTO;
 import com.forohub.api.domain.dto.topic.ShowTopicDTO;
 import com.forohub.api.domain.dto.topic.TopicDTO;
@@ -8,12 +9,12 @@ import com.forohub.api.domain.entity.Topic;
 import com.forohub.api.domain.entity.User;
 import com.forohub.api.infrastructure.repository.TopicRepository;
 import com.forohub.api.infrastructure.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,18 +34,7 @@ public class TopicService {
        topic.setUser(user);
         
         repository.save(topic);
-//        List<ResponseDTO> responses = topic.getResponses() == null ?
-//                List.of() :
-//                topic.getResponses().stream()
-//                        .map(response -> new ResponseDTO(
-//                                response.getMessage(),
-//                                response.getCreationDate(),
-//                                response.getUser() != null ? response.getUser().getName() : null,
-//                                response.getSolution())).collect(Collectors.toList());
-//        ShowTopicDTO topicDTO = new ShowTopicDTO(topic.getId().toString(),
-//                topic.getTitle(), topic.getMessage(),
-//                topic.getUser().getName(),responses,topic.getCreationDate()
-//            );
+
 
         return converToDto(topic);
     }
@@ -63,24 +53,42 @@ public class TopicService {
     }
 
     public  ShowTopicDTO findTopic(UUID id){
-        Topic topic = repository.getReferenceById(id);
+        try{
+            Topic topic = repository.getReferenceById(id);
 
-        return converToDto(topic);
+
+            return converToDto(topic);
+        }catch (EntityNotFoundException entity){
+            throw new ResourceNotFoundException("Topic no encontrado con ID: " + id);
+        }
+
     }
 
     public ShowTopicDTO update(UUID id, UpdateTopicDTO topicDTO){
-        Topic topic = repository.getReferenceById(id);
-        topic.setTitle(topicDTO.title());
-        topic.setMessage(topicDTO.message());
-        repository.save(topic);
+        try{
+            Topic topic = repository.getReferenceById(id);
+            topic.setTitle(topicDTO.title());
+            topic.setMessage(topicDTO.message());
+            repository.save(topic);
+            return converToDto(topic);
 
+        }catch (EntityNotFoundException entity){
+            throw new ResourceNotFoundException("Topic no encontrado con ID: " + id);
 
-        return converToDto(topic);
+        }
+
     }
 
     public void deleteTopic(UUID id){
-        Topic topic = repository.getReferenceById(id);
-        repository.delete(topic);
+        try{
+            Topic topic = repository.getReferenceById(id);
+            repository.delete(topic);
+        }catch (EntityNotFoundException e){
+            throw new ResourceNotFoundException("Topic no encontrado con ID: " + id);
+
+
+        }
+
 
     }
 

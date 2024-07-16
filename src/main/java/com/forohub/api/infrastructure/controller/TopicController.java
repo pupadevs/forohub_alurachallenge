@@ -5,6 +5,7 @@ import com.forohub.api.domain.dto.topic.ShowTopicDTO;
 import com.forohub.api.domain.dto.topic.TopicDTO;
 import com.forohub.api.domain.dto.topic.UpdateTopicDTO;
 import com.forohub.api.domain.entity.Topic;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,9 @@ public class TopicController {
 @Autowired
     private TopicService topic;
 
+
     @PostMapping
+    @Transactional
     public ResponseEntity<ShowTopicDTO> createTopic(@RequestBody @Valid TopicDTO data){
         ShowTopicDTO newTopic = topic.createTopic(data);
         return ResponseEntity.ok(newTopic);
@@ -37,13 +40,13 @@ public class TopicController {
         ShowTopicDTO data = topic.findTopic(id);
         return ResponseEntity.ok(data);
     }
-
+@Transactional
     @DeleteMapping("/delete/{id}")
     public ResponseEntity deleteTopic(@PathVariable UUID id){
         topic.deleteTopic(id);
         return ResponseEntity.noContent().build();
     }
-
+@Transactional
     @PutMapping("/update/{id}")
     public ResponseEntity<ShowTopicDTO> updateTopic(@PathVariable UUID id, @RequestBody @Valid UpdateTopicDTO topicDTO){
         ShowTopicDTO updateTopic = topic.update(id, topicDTO);

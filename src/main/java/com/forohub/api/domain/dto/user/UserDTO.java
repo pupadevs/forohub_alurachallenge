@@ -1,4 +1,4 @@
-package com.forohub.api.domain.dto;
+package com.forohub.api.domain.dto.user;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

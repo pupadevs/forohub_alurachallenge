@@ -1,6 +1,7 @@
-package com.forohub.api.app.service;
+package com.forohub.api.app.service.user;
 
-import com.forohub.api.domain.dto.UserDTO;
+import com.forohub.api.app.service.DuplicateEntryException;
+import com.forohub.api.domain.dto.user.UserDTO;
 import com.forohub.api.domain.entity.User;
 import com.forohub.api.infrastructure.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
