@@ -1,7 +1,7 @@
 package com.forohub.api.infrastructure.controller;
 
 
-import com.forohub.api.app.service.RegisterUserService;
+import com.forohub.api.app.service.user.RegisterUserService;
 import com.forohub.api.domain.dto.user.UserDTO;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;

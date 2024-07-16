@@ -3,8 +3,13 @@ package com.forohub.api.domain.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,7 +17,8 @@ import java.util.UUID;
 @Table(name = "users")
 @NoArgsConstructor
 @Getter
-public class User {
+@ToString
+public class User implements UserDetails {
     @Id
     @GeneratedValue(generator = "UUID")
     private UUID id;
@@ -36,16 +42,47 @@ public class User {
 
     }
 
-//    public static User createUser(String name, String email, String password){
-//        return new User(
-//                id,
-//                name,
-//                email,
-//                password
-//        );
-//    }
+
 
     public void addProfile(Profile profile){
 
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    }
+
+    @Override
+    public String getUsername() {
+        return this.email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return UserDetails.super.isAccountNonExpired();
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return UserDetails.super.isAccountNonLocked();
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return UserDetails.super.isCredentialsNonExpired();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return UserDetails.super.isEnabled();
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

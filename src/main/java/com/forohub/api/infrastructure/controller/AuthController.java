@@ -1,7 +1,7 @@
 package com.forohub.api.infrastructure.controller;
 
 import com.forohub.api.app.service.TokenService;
-import com.forohub.api.domain.dto.JwtDTO;
+import com.forohub.api.domain.dto.auth.JwtDTO;
 import com.forohub.api.domain.dto.auth.AuthDTO;
 import com.forohub.api.domain.entity.User;
 import jakarta.validation.Valid;

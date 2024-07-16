@@ -3,6 +3,7 @@ package com.forohub.api.domain.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ import java.util.UUID;
 @Table(name = "responses")
 @NoArgsConstructor
 @Getter
+@Setter
 public class Response {
     @Id
     @GeneratedValue(generator = "UUID")
@@ -27,6 +29,8 @@ public class Response {
     private  Topic topic;
 
     private String solution;
+
+
 
 
 

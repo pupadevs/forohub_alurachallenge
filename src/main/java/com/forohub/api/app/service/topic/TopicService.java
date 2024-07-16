@@ -1,7 +1,10 @@
 package com.forohub.api.app.service.topic;
 
 import com.forohub.api.app.service.ResourceNotFoundException;
-import com.forohub.api.domain.dto.ResponseDTO;
+import com.forohub.api.app.service.TokenService;
+import com.forohub.api.app.service.user.NoAuthorizedException;
+import com.forohub.api.domain.dto.response.ResponseDTO;
+import com.forohub.api.domain.dto.response.ShowResponseDTO;
 import com.forohub.api.domain.dto.topic.ShowTopicDTO;
 import com.forohub.api.domain.dto.topic.TopicDTO;
 import com.forohub.api.domain.dto.topic.UpdateTopicDTO;
@@ -22,39 +25,58 @@ import java.util.stream.Stream;
 @Service
 public class TopicService {
     @Autowired
-    private TopicRepository repository;
+    private TopicRepository topicRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private TokenService tokenService;
 
     public ShowTopicDTO createTopic(TopicDTO data){
         User user = userRepository.getReferenceById(UUID.fromString(data.uuid()));
-       var topic = new Topic(data.title(),data.message());
-       topic.setCreationDate(LocalDateTime.now());
-       topic.setStatus(true);
-       topic.setUser(user);
-        
-        repository.save(topic);
+        var topic = new Topic(data.title(),data.message());
+        topic.setCreationDate(LocalDateTime.now());
+        topic.setStatus(true);
+        topic.setUser(user);
 
+        topicRepository.save(topic);
+        List<ShowResponseDTO> responses = topic.getResponses() == null ?
+                List.of() :
+                topic.getResponses().stream()
+                        .map(response -> new ShowResponseDTO(
+                                response.getId(),
+                                response.getMessage(),
+                                response.getUser().getName(),
 
-        return converToDto(topic);
+                                response.getCreationDate(),
+
+                                response.getSolution())).collect(Collectors.toList());
+        System.out.println(topic.getId());
+
+        ShowTopicDTO topicDTO = new ShowTopicDTO(topic.getId().toString(),
+                topic.getTitle(), topic.getMessage(),
+                topic.getUser().getName(),responses,topic.getCreationDate()
+        );
+
+        return topicDTO;
     }
 
     public Stream<ShowTopicDTO> show(){
-        List<Topic> topics = repository.findAll();
+        List<Topic> topics = topicRepository.findAll();
 
         return  topics.stream().map(topic -> new ShowTopicDTO(topic.getId().toString(),topic.getTitle(),
                 topic.getMessage(),
                 topic.getUser().getName(),topic.getResponses().stream()
-                .map(response -> new ResponseDTO(
+                .map(response -> new ShowResponseDTO(
+                        response.getId(),
+                        response.getUser().getName(),
                         response.getMessage(),
                         response.getCreationDate(),
-                        response.getUser() != null ? response.getUser().getName() : null,
                         response.getSolution())).collect(Collectors.toList()),topic.getCreationDate()));
     }
 
     public  ShowTopicDTO findTopic(UUID id){
         try{
-            Topic topic = repository.getReferenceById(id);
+            Topic topic = topicRepository.getReferenceById(id);
 
 
             return converToDto(topic);
@@ -64,12 +86,22 @@ public class TopicService {
 
     }
 
-    public ShowTopicDTO update(UUID id, UpdateTopicDTO topicDTO){
+    public ShowTopicDTO update(UUID id, UpdateTopicDTO topicDTO, String token){
         try{
-            Topic topic = repository.getReferenceById(id);
+            Topic topic = topicRepository.getReferenceById(id);
+
+            String subject = tokenService.extractUserIdFromToken(token.substring(7));
+            System.out.println("User id: " +subject + "/n" );
+            System.out.println(id + ":topicid");
+            System.out.println(topic.getId() + ":topicid");
+            System.out.println( topic.getUser().getId()+  ":user_id");
+            System.out.println(subject);
+            System.out.println(topic.getUser());
+
+            verifyAuthorization(token,topic.getUser().getId().toString());
             topic.setTitle(topicDTO.title());
             topic.setMessage(topicDTO.message());
-            repository.save(topic);
+            topicRepository.save(topic);
             return converToDto(topic);
 
         }catch (EntityNotFoundException entity){
@@ -79,10 +111,11 @@ public class TopicService {
 
     }
 
-    public void deleteTopic(UUID id){
+    public void deleteTopic(UUID id, String token){
         try{
-            Topic topic = repository.getReferenceById(id);
-            repository.delete(topic);
+            Topic topic = topicRepository.getReferenceById(id);
+            verifyAuthorization(token,topic.getUser().getId().toString());
+            topicRepository.delete(topic);
         }catch (EntityNotFoundException e){
             throw new ResourceNotFoundException("Topic no encontrado con ID: " + id);
 
@@ -92,16 +125,27 @@ public class TopicService {
 
     }
 
+    private void verifyAuthorization(String token, String id){
+
+        String userID = tokenService.extractUserIdFromToken(token.substring(7));
+
+        if(!userID.equals(id)){
+            throw new NoAuthorizedException();
+        }
+
+    }
+
     private ShowTopicDTO converToDto(Topic topic){
         return  new ShowTopicDTO(
                 topic.getId().toString(),
                 topic.getTitle(),
                 topic.getMessage(),
                 topic.getUser().getName(),
-                topic.getResponses().stream().map(re -> new ResponseDTO(
+                topic.getResponses().stream().map(re -> new ShowResponseDTO(
+                        re.getId(),
                         re.getMessage(),
+                        re.getUser().getName(),
                         re.getCreationDate(),
-                        re.getUser() != null ? re.getUser().getName() : null,
                         re.getSolution())).collect(Collectors.toList()),topic.getCreationDate());
 
     }
